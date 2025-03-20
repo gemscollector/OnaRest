@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import Model from './model'
 
 /*------------------------------
 Renderer
@@ -34,7 +35,7 @@ const material = new THREE.MeshBasicMaterial( {
   color: 0x00ff00,
 } );
 const cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+/* scene.add( cube ); */
 
 
 /*------------------------------
@@ -46,11 +47,29 @@ const controls = new OrbitControls( camera, renderer.domElement );
 /*------------------------------
 Helpers
 ------------------------------*/
-const gridHelper = new THREE.GridHelper( 10, 10 );
+/* const gridHelper = new THREE.GridHelper( 10, 10 );
 scene.add( gridHelper );
 const axesHelper = new THREE.AxesHelper( 5 );
-scene.add( axesHelper );
+scene.add( axesHelper ); */
 
+
+/*------------------------------
+Models
+------------------------------*/
+const tree = new Model({
+  name: 'tree',
+  file: './models/tree.glb',
+  scene: scene,
+  color1: 'green',
+  color2: 'brown',
+})
+const leaf = new Model({
+  name: 'leaf',
+  file: './models/leaf.glb',
+  scene: scene,
+  color1: 'yellow',
+  color2: 'green'
+})
 
 /*------------------------------
 Loop
