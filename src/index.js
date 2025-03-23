@@ -180,6 +180,9 @@ function updateRotationFromViewport() {
   if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uScrollProgress) {
     girl.particlesMaterial.uniforms.uScrollProgress.value = progress;
   }
+  if (girl && girl.particles) {
+    girl.particles.position.y = progress * 1.5; // поднимается максимум на 1.5 единицы
+  }
 }
 window.addEventListener('scroll', updateRotationFromViewport);
 window.addEventListener('resize', updateRotationFromViewport);
