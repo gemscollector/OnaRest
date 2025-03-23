@@ -1,115 +1,109 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import * as dat from 'dat.gui';
-/* import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
- */
+import vertex from './shader/vertexShader.glsl';
+import fragment from './shader/fragmentShader.glsl';
+import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler';
+
 class modeltree {
-  constructor(obj) {
-    this.name = obj.name;
-    this.file = obj.file;
-    this.scene = obj.scene;
-    this.scale = obj.scale || 1;
+    constructor (obj) {
+        console.log(obj)
+        this.name = obj.name
+        this.file = obj.file
+        this.scene = obj.scene
+        this.scale = obj.scale || 1;
+        
+        this.isActive = false
 
-    this.loader = new GLTFLoader();
- /*    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('./draco/');
-    this.loader.setDRACOLoader(dracoLoader); */
+        this.color1 = obj.color1;
+        this.color2 = obj.color2;
+        this.color3 = obj.color3;
+        this.color4 = obj.color4;
+        this.color5 = obj.color5;
+        this.color6 = obj.color6;
+        this.color7 = obj.color7;
+        this.color8 = obj.color8;
+        this.loader = new GLTFLoader();
+        this.baseSize = obj.baseSize || 30.0;
+        this.init()
+    }
 
-    this.init();
-  }
+    init() {
+        this.loader.load(this.file, (response) => {
 
-  init() {
-    this.loader.load(this.file, (gltf) => {
-        this.model = gltf.scene;
-      
-        // 🔧 Настройка материалов — убираем блеск и добавляем шершавость
-        this.model.traverse((child) => {
-          if (child.isMesh && child.material) {
-            child.material.roughness = 1.0;      // максимальная шершавость
-            child.material.metalness = 0.0;      // без блеска
-            child.material.envMapIntensity = 0;  // отключить влияние окружения, если есть
-            child.material.needsUpdate = true;
-          }
+            this.model = response.scene;
+            console.log(this.model);
+            this.model.scale.set(this.scale, this.scale, this.scale); 
+            let firstMeshFound = false;
+    
+            this.model.traverse((child) => {
+                if (child.isMesh && !firstMeshFound) {
+                    firstMeshFound = true;
+                   this.particlesMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        uColor1: { value: new THREE.Color(this.color1) },
+                        uColor2: { value: new THREE.Color(this.color2) },
+               /*          uColor3: { value: new THREE.Color(this.color3) },
+                        uColor4: { value: new THREE.Color(this.color4) },
+                        uColor5: { value: new THREE.Color(this.color5) },
+                        uColor6: { value: new THREE.Color(this.color6) },
+                        uColor7: { value: new THREE.Color(this.color7) },
+                        uColor8: { value: new THREE.Color(this.color8) }, */
+                        uTime: { value: 0 },
+                        uMouse: { value: new THREE.Vector2(0.0, 0.0) },
+                        uStrength: { value: 0.0 },
+                        uScrollProgress: { value: 0 },
+                        uBaseSize: { value: this.baseSize || 30.0 }
+                    },
+                    vertexShader: vertex,
+                    fragmentShader: fragment,
+                    transparent: true,
+                    depthTest: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    
+                
+                   })
+                   child.geometry.applyMatrix4(new THREE.Matrix4().makeScale(this.scale, this.scale, this.scale));
+                    const sampler = new MeshSurfaceSampler(child).build()
+                    const numParticles = 20000
+                    this.particlesGeometry = new THREE.BufferGeometry()
+                    const particlesPosition = new Float32Array(numParticles * 3)
+
+                    const aOffset = new Float32Array(numParticles);
+                    const aFrequency = new Float32Array(numParticles);
+                    const aAmplitude = new Float32Array(numParticles);
+                    const aDelay = new Float32Array(numParticles);
+                    const aInitialPosition = new Float32Array(numParticles * 3);
+                    
+                    for (let i = 0; i < numParticles; i++) {
+                        const newPosition = new THREE.Vector3();
+                        sampler.sample(newPosition);
+                        particlesPosition.set([newPosition.x, newPosition.y, newPosition.z], i * 3);
+
+                        aInitialPosition.set([newPosition.x, newPosition.y, newPosition.z], i * 3);
+
+                        aOffset[i] = Math.random() * Math.PI * 2;
+                        aFrequency[i] = 0.5 + Math.random() * 0.5;
+                        aAmplitude[i] = 0.02 + Math.random() * 0.08;
+                        aDelay[i] = Math.random();
+                    }
+
+                    this.particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlesPosition, 3));
+                    this.particlesGeometry.setAttribute('aInitialPosition', new THREE.BufferAttribute(aInitialPosition, 3));
+                    this.particlesGeometry.setAttribute('aOffset', new THREE.BufferAttribute(aOffset, 1));
+                    this.particlesGeometry.setAttribute('aFrequency', new THREE.BufferAttribute(aFrequency, 1));
+                    this.particlesGeometry.setAttribute('aAmplitude', new THREE.BufferAttribute(aAmplitude, 1));
+                    this.particlesGeometry.setAttribute('aDelay', new THREE.BufferAttribute(aDelay, 1));
+
+                    this.particles = new THREE.Points(this.particlesGeometry, this.particlesMaterial);
+                    this.particles.rotation.x = Math.PI / 2;
+                    this.scene.add(this.particles);
+                    this.isActive = true
+                }
+            });
+    
         });
-        
-        // Добавляем мягкий приглушённый свет к дамочке
-        const softLight = new THREE.DirectionalLight(0xffddcc, -3.0); // тёплый и слабый
-        softLight.position.set(1, 1, 1);
-        this.model.add(softLight);
-
-        const softSpot = new THREE.SpotLight(0xccccff, 0.5);
-softSpot.angle = Math.PI / 2;
-softSpot.penumbra = 0.8;
-softSpot.decay = 2;
-softSpot.distance = 3;
-softSpot.position.set(-1, -2, 2);
-softSpot.target.position.set(0, 0.5, 0);
-
-this.model.add(softSpot);
-this.model.add(softSpot.target);
-
-const gui = new dat.GUI();
-
-const folder = gui.addFolder('Luna Soft Spot');
-
-folder.add(softSpot.position, 'x', -10, 10).name('X Position');
-folder.add(softSpot.position, 'y', -10, 10).name('Y Position');
-folder.add(softSpot.position, 'z', -10, 10).name('Z Position');
-
-folder.add(softSpot.target.position, 'x', -10, 10).name('Target X');
-folder.add(softSpot.target.position, 'y', -10, 10).name('Target Y');
-folder.add(softSpot.target.position, 'z', -10, 10).name('Target Z');
-
-folder.add(softSpot, 'intensity', 0, 5).name('Intensity');
-folder.add(softSpot, 'angle', 0, Math.PI / 2).name('Angle');
-folder.add(softSpot, 'penumbra', 0, 1).name('Penumbra');
-
-folder.open();
-
-
-
-        const fillLight = new THREE.AmbientLight(0x404040, -3.0); // общий свет
-        this.model.add(fillLight);
-
-        
-        
-      
-        this.model.scale.set(this.scale, this.scale, this.scale);
-        this.model.position.set(0, 0, 0);
-        this.scene.add(this.model);
-
-        // === Разбиваем дамочку на партикулы ===
-        let firstMesh = null;
-
-        this.model.traverse((child) => {
-          if (child.isMesh && !firstMesh) {
-            firstMesh = child;
-          }
-        });
-
-        if (firstMesh) {
-          const geometry = firstMesh.geometry.clone();
-          const material = new THREE.PointsMaterial({
-            color: 0xffffff,
-            size: 0.01,
-            sizeAttenuation: true
-          });
-
-          const points = new THREE.Points(geometry, material);
-
-          // Применяем ту же трансформацию, но поправляем вращение
-          points.position.copy(this.model.position);
-          points.scale.copy(this.model.scale);
-          points.rotation.copy(this.model.rotation);
-
-          // Корректируем наклон по оси X (дамочка стоя)
-          points.rotation.x += Math.PI / 2;
-
-          this.scene.add(points);
-          this.model.visible = false; // скрываем оригинальную модель
-        }
-      });
-  }
+    }
 }
 
 export default modeltree;

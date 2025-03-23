@@ -50,6 +50,7 @@ const leaf = new Model({
   file: './models/leaf.glb',
   scene: scene,
   scale: 4,
+  baseSize: 40,
   color1: '#bdba2a',
   color2: '#20d419',
   color3: '#b342f5',
@@ -64,8 +65,13 @@ const girl = new modeltree({
   name: 'ona',
   file: './models/tree.glb',
   scene: scene,
-  scale: 2
+  scale: 2,
+  baseSize: 20,
+  color1: '#AAAAAA',
+  color2: '#371C1C',
 });
+
+
 
 /*------------------------------
 Bloom Effect
@@ -121,13 +127,24 @@ function animate() {
   if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uMouse) {
     leaf.particlesMaterial.uniforms.uMouse.value.copy(currentMouse);
   }
+  if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uMouse) {
+    girl.particlesMaterial.uniforms.uMouse.value.copy(currentMouse);
+  }
 
-  // 🔥 Обновляем время в шейдере для частиц
   if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uTime) {
     leaf.particlesMaterial.uniforms.uTime.value = elapsedTime;
   }
+  if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uTime) {
+    girl.particlesMaterial.uniforms.uTime.value = elapsedTime;
+  }
 
-  // Плавное затухание притяжения к курсору
+  if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uHighlightTime) {
+    leaf.particlesMaterial.uniforms.uHighlightTime.value = elapsedTime * 2;
+  }
+  if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uHighlightTime) {
+    girl.particlesMaterial.uniforms.uHighlightTime.value = elapsedTime;
+  }
+
   if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uStrength) {
     if (Date.now() - lastMouseTime > 200) {
       targetStrength = 0.0;
@@ -135,12 +152,15 @@ function animate() {
     currentStrength += (targetStrength - currentStrength) * 0.05;
     leaf.particlesMaterial.uniforms.uStrength.value = currentStrength;
   }
+  if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uStrength) {
+    girl.particlesMaterial.uniforms.uStrength.value = currentStrength;
+  }
 
-  // 🔁 Вращение сцены по скроллу
+ 
+
   scene.rotation.y += (targetRotation - scene.rotation.y) * 0.05;
 
   composer.render();
-
 }
 animate();
 
@@ -156,6 +176,9 @@ function handleScroll() {
   const progress = Math.min(scrollY / (document.body.scrollHeight - window.innerHeight), 1);
   if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uScrollProgress) {
     leaf.particlesMaterial.uniforms.uScrollProgress.value = progress;
+  }
+  if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uScrollProgress) {
+    girl.particlesMaterial.uniforms.uScrollProgress.value = progress;
   }
 }
 window.addEventListener('scroll', handleScroll);

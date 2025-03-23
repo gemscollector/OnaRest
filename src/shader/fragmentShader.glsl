@@ -5,6 +5,7 @@ uniform vec3 uColor8;
 uniform vec3 uColor3;
 uniform vec3 uColor4;
 uniform float uScrollProgress;
+uniform float uHighlightTime;
 uniform vec3 uColor1;
 uniform vec3 uColor2;
 varying vec3 vPosition;
@@ -42,6 +43,9 @@ void main() {
     baseColor = mix(colorC, colorD, p);
   }
   vec3 color = baseColor * light;
-
+// Волна блика по оси X
+float wave = sin((vPosition.x * 100.0 + uHighlightTime) * 0.9);
+wave = smoothstep(0.9, 1.0, wave); // узкая зона вспышки
+color += wave * 0.4; // добавляем яркости к основному цвету
   gl_FragColor = vec4(color, alpha);
 }

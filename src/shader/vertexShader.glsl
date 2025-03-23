@@ -7,6 +7,7 @@ attribute float aDelay;
 uniform float uTime;
 uniform vec2 uMouse;
 uniform float uStrength;
+uniform float uBaseSize;
 
 varying vec3 vPosition;
 
@@ -39,7 +40,7 @@ void main() {
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
-  float size = 40.0 / -mvPosition.z;
+  float size = uBaseSize / -mvPosition.z;
 size *= smoothstep(40.0, 10.1, -mvPosition.z); // усилить передний
 size *= smoothstep(-2.0, 1.5, pos.y);
 gl_PointSize = size;

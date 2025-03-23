@@ -23,6 +23,7 @@ class Model {
         this.color6 = obj.color6;
         this.color7 = obj.color7;
         this.color8 = obj.color8;
+        this.baseSize = obj.baseSize || 30.0;
 
         this.loader = new GLTFLoader()
         this.dracoLoader = new DRACOLoader()
@@ -56,7 +57,9 @@ class Model {
                         uTime: { value: 0 },
                         uMouse: { value: new THREE.Vector2(0.0, 0.0) }, // добавили
                         uStrength: { value: 0.0 }, // силу притяжения
-                        uScrollProgress: { value: 0 }
+                        uScrollProgress: { value: 0 },
+                        uBaseSize: { value: this.baseSize },
+                        uHighlightTime: { value: 0 },
                     },
                     vertexShader: vertex,
                     fragmentShader: fragment,
