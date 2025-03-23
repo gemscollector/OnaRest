@@ -50,8 +50,14 @@ const leaf = new Model({
   file: './models/leaf.glb',
   scene: scene,
   scale: 4,
-  color1: 'yellow',
-  color2: 'green'
+  color1: '#bdba2a',
+  color2: '#20d419',
+  color3: '#b342f5',
+  color4: '#4cdbff',
+  color5: '#3f51b5',
+  color6: '#2196f3',
+  color7: '#03a9f4',
+  color8: '#00bcd4'
 });
 
 const girl = new modeltree({
@@ -80,6 +86,30 @@ Clock
 ------------------------------*/
 const clock = new THREE.Clock();
 
+let targetStrength = 0;
+let currentStrength = 0;
+let lastMouseTime = Date.now();
+
+// ==========================
+// Cursor → World Projection
+// ==========================
+const mouse = new THREE.Vector2();
+const mouseWorld = new THREE.Vector3();
+const currentMouse = new THREE.Vector3();
+const raycaster = new THREE.Raycaster();
+
+window.addEventListener('mousemove', (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+  raycaster.ray.intersectPlane(planeZ, mouseWorld);
+
+  lastMouseTime = Date.now();
+  targetStrength = 1.0;
+});
+
 /*------------------------------
 Animation Loop
 ------------------------------*/
@@ -87,18 +117,34 @@ function animate() {
   requestAnimationFrame(animate);
 
   const elapsedTime = clock.getElapsedTime();
+  currentMouse.lerp(mouseWorld, 0.05);
+  if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uMouse) {
+    leaf.particlesMaterial.uniforms.uMouse.value.copy(currentMouse);
+  }
 
   // 🔥 Обновляем время в шейдере для частиц
   if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uTime) {
     leaf.particlesMaterial.uniforms.uTime.value = elapsedTime;
   }
 
+  // Плавное затухание притяжения к курсору
+  if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uStrength) {
+    if (Date.now() - lastMouseTime > 200) {
+      targetStrength = 0.0;
+    }
+    currentStrength += (targetStrength - currentStrength) * 0.05;
+    leaf.particlesMaterial.uniforms.uStrength.value = currentStrength;
+  }
+
   // 🔁 Вращение сцены по скроллу
   scene.rotation.y += (targetRotation - scene.rotation.y) * 0.05;
 
   composer.render();
+
 }
 animate();
+
+/* Cursor */
 
 /*------------------------------
 Scroll Rotation
@@ -106,6 +152,11 @@ Scroll Rotation
 function handleScroll() {
   const scrollY = window.scrollY;
   targetRotation = scrollY * 0.002;
+
+  const progress = Math.min(scrollY / (document.body.scrollHeight - window.innerHeight), 1);
+  if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uScrollProgress) {
+    leaf.particlesMaterial.uniforms.uScrollProgress.value = progress;
+  }
 }
 window.addEventListener('scroll', handleScroll);
 
