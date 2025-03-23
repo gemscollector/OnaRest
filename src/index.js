@@ -71,8 +71,6 @@ const girl = new modeltree({
   color2: '#371C1C',
 });
 
-
-
 /*------------------------------
 Bloom Effect
 ------------------------------*/
@@ -156,8 +154,6 @@ function animate() {
     girl.particlesMaterial.uniforms.uStrength.value = currentStrength;
   }
 
- 
-
   scene.rotation.y += (targetRotation - scene.rotation.y) * 0.05;
 
   composer.render();
@@ -169,11 +165,15 @@ animate();
 /*------------------------------
 Scroll Rotation
 ------------------------------*/
-function handleScroll() {
-  const scrollY = window.scrollY;
-  targetRotation = scrollY * 0.002;
+function updateRotationFromViewport() {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const screenCenter = window.innerHeight / 2;
+  const offset = rect.top - screenCenter;
 
-  const progress = Math.min(scrollY / (document.body.scrollHeight - window.innerHeight), 1);
+  targetRotation = offset * 0.002;
+
+  // Примерная эмуляция scrollProgress — на основе вертикального положения
+  const progress = Math.min(Math.max((screenCenter - rect.top) / window.innerHeight, 0), 1);
   if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uScrollProgress) {
     leaf.particlesMaterial.uniforms.uScrollProgress.value = progress;
   }
@@ -181,7 +181,9 @@ function handleScroll() {
     girl.particlesMaterial.uniforms.uScrollProgress.value = progress;
   }
 }
-window.addEventListener('scroll', handleScroll);
+window.addEventListener('scroll', updateRotationFromViewport);
+window.addEventListener('resize', updateRotationFromViewport);
+updateRotationFromViewport(); // вызвать сразу при старте
 
 /*------------------------------
 Resize
