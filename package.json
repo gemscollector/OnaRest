@@ -16,7 +16,7 @@
     "parcel-reporter-static-files-copy": "^1.4.0"
   },
   "dependencies": {
-    "gsap": "^3.6.0",
+    "gsap": "^3.12.7",
     "three": "^0.125.2"
   }
 }
