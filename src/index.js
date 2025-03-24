@@ -27,6 +27,7 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.z = 5;
 camera.position.y = 1;
 let targetRotation = 0;
+let hasScrollY = false;
 
 /*------------------------------
 Lights
@@ -154,7 +155,9 @@ function animate() {
     girl.particlesMaterial.uniforms.uStrength.value = currentStrength;
   }
 
-  scene.rotation.y += (targetRotation - scene.rotation.y) * 0.05;
+  if (hasScrollY) {
+    scene.rotation.y += (targetRotation - scene.rotation.y) * 0.05;
+  }
 
   composer.render();
 }
@@ -176,6 +179,7 @@ function updateRotationFromViewport(event) {
   const screenCenter = window.innerHeight / 2;
   const offset = scrollY - screenCenter;
   targetRotation = offset * 0.002;
+  hasScrollY = true;
 
   const rect = renderer.domElement.getBoundingClientRect();
   const progress = Math.min(Math.max((screenCenter - rect.top) / window.innerHeight, 0), 1);
