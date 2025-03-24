@@ -192,7 +192,6 @@ function updateRotationFromViewport(event) {
   }
 }
 window.addEventListener('message', updateRotationFromViewport);
-window.addEventListener('resize', updateRotationFromViewport);
 
 /*------------------------------
 Resize
