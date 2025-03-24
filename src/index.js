@@ -28,6 +28,7 @@ camera.position.z = 5;
 camera.position.y = 1;
 let targetRotation = 0;
 let hasScrollY = false;
+let animationStarted = false;
 
 /*------------------------------
 Lights
@@ -161,7 +162,7 @@ function animate() {
 
   composer.render();
 }
-animate();
+ 
 
 /* Cursor */
 
@@ -179,7 +180,11 @@ function updateRotationFromViewport(event) {
   const screenCenter = window.innerHeight / 2;
   const offset = scrollY - screenCenter;
   targetRotation = offset * 0.002;
-  hasScrollY = true;
+  if (!animationStarted) {
+    animationStarted = true;
+    hasScrollY = true;
+    animate();
+  }
 
   const rect = renderer.domElement.getBoundingClientRect();
   const progress = Math.min(Math.max((screenCenter - rect.top) / window.innerHeight, 0), 1);
