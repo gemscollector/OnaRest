@@ -171,7 +171,10 @@ Scroll Rotation
 ------------------------------*/
 function updateRotationFromViewport(event) {
   const scrollY = event?.data?.scrollY;
-  if (typeof scrollY !== 'number') return;
+  if (scrollY < 50 || scrollY > window.innerHeight * 2) {
+    console.warn('[IFRAME] scrollY за пределами нормы, игнорируем:', scrollY);
+    return;
+  }
 
   console.log('[IFRAME] scrollY получен от родителя:', scrollY);
 
