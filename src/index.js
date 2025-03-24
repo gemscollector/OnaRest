@@ -170,27 +170,18 @@ function animate() {
 Scroll Rotation
 ------------------------------*/
 function updateRotationFromViewport(event) {
-  const scrollY = event?.data?.scrollY;
-  if (scrollY < 50 || scrollY > window.innerHeight * 2) {
-    console.warn('[IFRAME] scrollY за пределами нормы, игнорируем:', scrollY);
-    return;
-  }
+  const progress = event?.data?.scrollProgress;
+  if (typeof progress !== 'number') return;
 
-  console.log('[IFRAME] scrollY получен от родителя:', scrollY);
-
-  if (scrollY < 50) return;
-
-  const screenCenter = window.innerHeight / 2;
-  const offset = scrollY - screenCenter;
-  targetRotation = offset * 0.002;
   if (!animationStarted) {
     animationStarted = true;
     hasScrollY = true;
     animate();
   }
 
-  const rect = renderer.domElement.getBoundingClientRect();
-  const progress = Math.min(Math.max((screenCenter - rect.top) / window.innerHeight, 0), 1);
+  // Вращение сцены
+  const screenCenter = window.innerHeight / 2;
+  targetRotation = (progress - 0.5) * 2 * 0.5; // от -0.5 до 0.5
 
   if (leaf?.particlesMaterial?.uniforms?.uScrollProgress) {
     leaf.particlesMaterial.uniforms.uScrollProgress.value = progress;
