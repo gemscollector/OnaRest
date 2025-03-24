@@ -165,28 +165,30 @@ animate();
 /*------------------------------
 Scroll Rotation
 ------------------------------*/
-function updateRotationFromViewport() {
-  const rect = renderer.domElement.getBoundingClientRect();
-  const screenCenter = window.innerHeight / 2;
-  const offset = rect.top - screenCenter;
+function updateRotationFromViewport(event) {
+  const scrollY = event?.data?.scrollY;
+  if (typeof scrollY !== 'number') return;
 
+  console.log('[IFRAME] scrollY получен от родителя:', scrollY);
+
+  if (scrollY < 50) return;
+
+  const screenCenter = window.innerHeight / 2;
+  const offset = scrollY - screenCenter;
   targetRotation = offset * 0.002;
 
-  // Примерная эмуляция scrollProgress — на основе вертикального положения
+  const rect = renderer.domElement.getBoundingClientRect();
   const progress = Math.min(Math.max((screenCenter - rect.top) / window.innerHeight, 0), 1);
-  if (leaf && leaf.particlesMaterial && leaf.particlesMaterial.uniforms.uScrollProgress) {
+
+  if (leaf?.particlesMaterial?.uniforms?.uScrollProgress) {
     leaf.particlesMaterial.uniforms.uScrollProgress.value = progress;
   }
-  if (girl && girl.particlesMaterial && girl.particlesMaterial.uniforms.uScrollProgress) {
+  if (girl?.particlesMaterial?.uniforms?.uScrollProgress) {
     girl.particlesMaterial.uniforms.uScrollProgress.value = progress;
-  }
-  if (girl && girl.particles) {
-    girl.particles.position.y = progress * 1.5; // поднимается максимум на 1.5 единицы
   }
 }
 window.addEventListener('scroll', updateRotationFromViewport);
 window.addEventListener('resize', updateRotationFromViewport);
-updateRotationFromViewport(); // вызвать сразу при старте
 
 /*------------------------------
 Resize
