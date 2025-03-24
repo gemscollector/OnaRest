@@ -186,8 +186,12 @@ function updateRotationFromViewport(event) {
   if (girl?.particlesMaterial?.uniforms?.uScrollProgress) {
     girl.particlesMaterial.uniforms.uScrollProgress.value = progress;
   }
+
+  if (girl?.particles) {
+    girl.particles.position.y = progress * 1.5;
+  }
 }
-window.addEventListener('scroll', updateRotationFromViewport);
+window.addEventListener('message', updateRotationFromViewport);
 window.addEventListener('resize', updateRotationFromViewport);
 
 /*------------------------------
